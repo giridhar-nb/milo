@@ -1,986 +1,906 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Archive</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          parchment: '#FAF7F0',
-          ink: '#1C1712',
-          ember: '#BF4A1C',
-          muted: '#7A6F62',
-          line: '#E6DFD2',
-        },
-        fontFamily: {
-          display: ['"Playfair Display"', 'serif'],
-          body: ['"DM Sans"', 'sans-serif'],
-          mono: ['"DM Mono"', 'monospace'],
-        },
-      },
-    },
-  };
-</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nextbase LTE Subscription Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  html, body, #root { height: 100%; }
-  body {
-    background: #FAF7F0;
-    color: #1C1712;
-    font-family: 'DM Sans', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:       #0E0F11;
+    --bg2:      #16181C;
+    --bg3:      #1E2128;
+    --border:   #2A2D35;
+    --border2:  #353840;
+    --text:     #E8E9EC;
+    --text2:    #9095A0;
+    --text3:    #5C6270;
+    --teal:     #2DD4A0;
+    --teal-dim: #1A3D30;
+    --teal-txt: #6EE7C0;
+    --purple:   #8B7EF8;
+    --purple-dim:#231F47;
+    --purple-txt:#BDB6FC;
+    --amber:    #F59E0B;
+    --amber-dim:#2D200A;
+    --amber-txt:#FCD34D;
+    --red:      #F87171;
+    --red-dim:  #2D1010;
+    --green:    #34D399;
+    --green-dim:#0D2B20;
+    --accent:   #2DD4A0;
+    --r:        6px;
+    --r2:       10px;
   }
-  .font-display { font-family: 'Playfair Display', serif; }
-  .font-body { font-family: 'DM Sans', sans-serif; }
-  .font-mono { font-family: 'DM Mono', monospace; }
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: #E6DFD2; border-radius: 6px; }
-  ::-webkit-scrollbar-thumb:hover { background: #d6cdb9; }
-  /* Hide spinner on number inputs (not used but tidy) */
-  textarea { resize: none; }
-  /* Subtle fade for overlays */
-  .fade-in { animation: fadeIn 160ms ease-out; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--teal);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .header-title {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 400;
+  }
+  .header-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Section label */
+  .sec-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* Panel */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 20px 22px;
+    margin-bottom: 24px;
+  }
+  .panel-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  .panel-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 28px; }
+  .panel-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+  /* Slider row */
+  .sl-row { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+  .sl-label { font-size: 12px; color: var(--text2); min-width: 180px; line-height: 1.4; }
+  .sl-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 58px;
+    text-align: right;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 3px 8px;
+  }
+
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg2);
+    box-shadow: 0 0 0 1px var(--accent);
+    cursor: pointer;
+    transition: transform .15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+  /* Metric card */
+  .metric {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 14px;
+  }
+  .metric-label { font-size: 11px; color: var(--text3); margin: 0 0 4px; font-family: 'DM Mono', monospace; letter-spacing: .04em; }
+  .metric-value { font-size: 20px; font-weight: 600; color: var(--text); margin: 0; font-family: 'DM Mono', monospace; }
+  .metric-sub { font-size: 11px; color: var(--text3); margin: 3px 0 0; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-right: 6px;
+    vertical-align: middle;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .badge-teal   { background: var(--teal-dim);   color: var(--teal-txt); }
+  .badge-purple { background: var(--purple-dim);  color: var(--purple-txt); }
+  .badge-amber  { background: var(--amber-dim);   color: var(--amber-txt); }
+
+  /* Tier panels */
+  .tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .tier-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 18px 20px;
+  }
+  .tier-panel.premium { border-color: var(--purple); box-shadow: 0 0 0 1px var(--purple-dim); }
+  .tier-head {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-big {
+    font-family: 'DM Mono', monospace;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0;
+    line-height: 1;
+  }
+  .price-unit { font-size: 14px; color: var(--text3); font-weight: 400; margin-left: 4px; }
+  .price-range { font-size: 11px; color: var(--text3); margin: 0 0 8px; font-family: 'DM Mono', monospace; }
+  .price-slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .price-range-lbl { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); min-width: 28px; }
+
+  /* Bar */
+  .bar-wrap { background: var(--bg3); border-radius: 3px; height: 5px; overflow: hidden; margin: 4px 0 8px; }
+  .bar-fill { height: 5px; border-radius: 3px; transition: width .2s, background .2s; }
+
+  /* Usage bar */
+  .usage-bar-wrap { display: flex; gap: 2px; height: 7px; border-radius: 4px; overflow: hidden; background: var(--bg3); }
+  .usage-used { border-radius: 4px 0 0 4px; transition: width .2s; }
+  .usage-spare { border-radius: 0 4px 4px 0; background: var(--border2); transition: width .2s; }
+
+  /* Status message */
+  .msg {
+    border-radius: var(--r);
+    padding: 8px 11px;
+    font-size: 12px;
+    margin-top: 10px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .02em;
+  }
+  .msg-good { background: var(--green-dim); color: var(--green); border: 1px solid #1A4D38; }
+  .msg-warn { background: var(--red-dim);   color: var(--red);   border: 1px solid #4D1818; }
+
+  /* P&L breakdown */
+  .pl-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pl-row:last-child { border-bottom: none; font-weight: 600; }
+  .pl-label { color: var(--text2); }
+  .pl-val { font-family: 'DM Mono', monospace; }
+
+  /* Framing box */
+  .framing-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .framing-title { font-size: 10px; color: var(--text3); margin: 0 0 5px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .08em; }
+  .framing-value { font-size: 15px; font-weight: 600; color: var(--teal); margin: 0 0 3px; font-family: 'DM Mono', monospace; }
+  .framing-sub { font-size: 11px; color: var(--text2); margin: 0; line-height: 1.55; }
+
+  /* Chart wrapper */
+  .chart-wrap { position: relative; width: 100%; height: 240px; }
+
+  /* Summary cards at top */
+  .summary-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 28px; }
+  .summary-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r2);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .summary-card.highlight { border-color: var(--teal); background: linear-gradient(135deg, #0D2B20 0%, var(--bg2) 100%); }
+  .summary-label { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; letter-spacing: .05em; margin: 0 0 6px; }
+  .summary-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; margin: 0; }
+  .summary-sub { font-size: 10px; color: var(--text3); margin: 3px 0 0; }
+
+  /* Section spacer */
+  .spacer { margin-bottom: 28px; }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .panel-grid2, .tier-grid, .summary-grid { grid-template-columns: 1fr; }
+    .panel-grid4 { grid-template-columns: repeat(2,1fr); }
+    .sl-label { min-width: 130px; font-size: 11px; }
+    .summary-grid { grid-template-columns: repeat(2,1fr); }
+  }
 </style>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-<div id="root"></div>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
+<div class="header">
+  <span class="header-logo">Nextbase</span>
+  <span class="header-title">LTE Subscription Pricing Calculator</span>
+  <span class="header-badge">Internal · Confidential</span>
+</div>
 
-// ───────────────────────────────────────────────────────────────────────────
-// SUPABASE CONFIG (optional)
-// Fill these in to enable background sync. Leave blank to run localStorage-only.
-// Schema expected: table `kv_store` with columns `key` (text, pk) and `value` (jsonb or text).
-// RLS must allow anon select/insert/update/delete on kv_store (or use a service key in a backend).
-// ───────────────────────────────────────────────────────────────────────────
-const SUPABASE_URL = ""; // e.g. "https://xxxx.supabase.co"
-const SUPABASE_ANON_KEY = ""; // e.g. "eyJhbGciOi..."
-const SUPABASE_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+<div class="container">
 
-// ───────────────────────────────────────────────────────────────────────────
-// Persistence layer
-// ───────────────────────────────────────────────────────────────────────────
-const LS = {
-  CONFIG: 'archive:config',
-  ITEM_IDS: 'archive:item-ids',
-  ITEM: (id) => `archive:item:${id}`,
-  DELETED_SEEDS: 'archive:deleted-seed-ids',
-};
-
-function lsGet(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw === null || raw === undefined) return fallback;
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
-}
-function lsSet(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
-}
-function lsDel(key) {
-  try { localStorage.removeItem(key); } catch {}
-}
-
-// Supabase REST helpers — fire and forget for writes, awaited for initial read.
-async function sbGet(key) {
-  if (!SUPABASE_ENABLED) return null;
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=eq.${encodeURIComponent(key)}&select=value`, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-    });
-    if (!r.ok) return null;
-    const rows = await r.json();
-    if (!rows || !rows.length) return null;
-    const v = rows[0].value;
-    if (typeof v === 'string') {
-      try { return JSON.parse(v); } catch { return v; }
-    }
-    return v;
-  } catch {
-    return null;
-  }
-}
-async function sbGetAllItems() {
-  if (!SUPABASE_ENABLED) return [];
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=like.archive:item:*&select=key,value`, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-    });
-    if (!r.ok) return [];
-    const rows = await r.json();
-    return (rows || []).map((row) => {
-      const v = row.value;
-      if (typeof v === 'string') { try { return JSON.parse(v); } catch { return null; } }
-      return v;
-    }).filter(Boolean);
-  } catch {
-    return [];
-  }
-}
-function sbUpsert(key, value) {
-  if (!SUPABASE_ENABLED) return;
-  fetch(`${SUPABASE_URL}/rest/v1/kv_store`, {
-    method: 'POST',
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'resolution=merge-duplicates',
-    },
-    body: JSON.stringify({ key, value }),
-  }).catch(() => {});
-}
-function sbDelete(key) {
-  if (!SUPABASE_ENABLED) return;
-  fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=eq.${encodeURIComponent(key)}`, {
-    method: 'DELETE',
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-  }).catch(() => {});
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Defaults + seeds
-// ───────────────────────────────────────────────────────────────────────────
-const DEFAULT_CONFIG = {
-  pageTitle: 'Archive',
-  tabs: [], // [{ id, name }]
-};
-
-const SEEDS = [
-  {
-    id: 'seed-reading-list',
-    type: 'table',
-    title: 'Reading list',
-    description: 'Articles and books worth returning to.',
-    tabId: 'all',
-    createdAt: 0,
-    isSeed: true,
-    data: {
-      columns: [
-        { id: 'c1', label: 'Title' },
-        { id: 'c2', label: 'Author' },
-        { id: 'c3', label: 'Status' },
-        { id: 'c4', label: 'Notes' },
-      ],
-      rows: [
-        ['The Tyranny of Metrics', 'Jerry Z. Muller', 'Reading', 'On measurement and its discontents.'],
-        ['Designing Data-Intensive Applications', 'Martin Kleppmann', 'Queued', ''],
-        ['On Writing Well', 'William Zinsser', 'Done', 'Clarity over cleverness.'],
-      ],
-    },
-  },
-  {
-    id: 'seed-team-notes',
-    type: 'table',
-    title: 'Team rituals',
-    description: 'Recurring practices and what they are for.',
-    tabId: 'all',
-    createdAt: 0,
-    isSeed: true,
-    data: {
-      columns: [
-        { id: 'c1', label: 'Ritual' },
-        { id: 'c2', label: 'Cadence' },
-        { id: 'c3', label: 'Purpose' },
-      ],
-      rows: [
-        ['Weekly review', 'Friday', 'Reflect and reset priorities.'],
-        ['Async standup', 'Daily', 'Surface blockers without a meeting.'],
-        ['Show & tell', 'Bi-weekly', 'Share works in progress.'],
-      ],
-    },
-  },
-];
-
-function uid(prefix = 'id') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Archive state hook
-// ───────────────────────────────────────────────────────────────────────────
-function useArchive() {
-  const [config, setConfigState] = useState(() => lsGet(LS.CONFIG, DEFAULT_CONFIG));
-  const [items, setItems] = useState(() => {
-    const ids = lsGet(LS.ITEM_IDS, null);
-    if (ids && Array.isArray(ids)) {
-      const loaded = ids.map((id) => lsGet(LS.ITEM(id), null)).filter(Boolean);
-      // Inject seeds that haven't been deleted, on first run when no items exist
-      const deletedSeeds = lsGet(LS.DELETED_SEEDS, []);
-      if (loaded.length === 0) {
-        const fresh = SEEDS.filter((s) => !deletedSeeds.includes(s.id));
-        return fresh;
-      }
-      return loaded;
-    } else {
-      const deletedSeeds = lsGet(LS.DELETED_SEEDS, []);
-      return SEEDS.filter((s) => !deletedSeeds.includes(s.id));
-    }
-  });
-
-  // On first mount, ensure seeds are written if not yet stored.
-  const seededRef = useRef(false);
-  useEffect(() => {
-    if (seededRef.current) return;
-    seededRef.current = true;
-    const existingIds = lsGet(LS.ITEM_IDS, null);
-    if (!existingIds) {
-      // first-ever load: write seeds to LS + Supabase
-      const deleted = lsGet(LS.DELETED_SEEDS, []);
-      const fresh = SEEDS.filter((s) => !deleted.includes(s.id));
-      const ids = fresh.map((s) => s.id);
-      lsSet(LS.ITEM_IDS, ids);
-      lsSet(LS.CONFIG, config);
-      fresh.forEach((item) => {
-        lsSet(LS.ITEM(item.id), item);
-        sbUpsert(LS.ITEM(item.id), item);
-      });
-      sbUpsert(LS.ITEM_IDS, ids);
-      sbUpsert(LS.CONFIG, config);
-    }
-    // Background sync: pull config + items from Supabase and merge. Local wins.
-    (async () => {
-      if (!SUPABASE_ENABLED) return;
-      const remoteConfig = await sbGet(LS.CONFIG);
-      if (remoteConfig && !lsGet(LS.CONFIG, null)) {
-        lsSet(LS.CONFIG, remoteConfig);
-        setConfigState(remoteConfig);
-      }
-      const remoteItems = await sbGetAllItems();
-      if (remoteItems.length) {
-        const localIds = new Set((lsGet(LS.ITEM_IDS, []) || []).map(String));
-        const deletedSeeds = lsGet(LS.DELETED_SEEDS, []);
-        const additions = remoteItems.filter(
-          (it) => it && it.id && !localIds.has(it.id) && !deletedSeeds.includes(it.id)
-        );
-        if (additions.length) {
-          additions.forEach((it) => lsSet(LS.ITEM(it.id), it));
-          const newIds = [...(lsGet(LS.ITEM_IDS, []) || []), ...additions.map((it) => it.id)];
-          lsSet(LS.ITEM_IDS, newIds);
-          setItems((prev) => [...prev, ...additions]);
-        }
-      }
-    })();
-  // eslint-disable-next-line
-  }, []);
-
-  const persistItems = (next) => {
-    setItems(next);
-    const ids = next.map((i) => i.id);
-    lsSet(LS.ITEM_IDS, ids);
-    sbUpsert(LS.ITEM_IDS, ids);
-  };
-
-  const setConfig = (next) => {
-    setConfigState(next);
-    lsSet(LS.CONFIG, next);
-    sbUpsert(LS.CONFIG, next);
-  };
-
-  const upsertItem = (item) => {
-    setItems((prev) => {
-      const idx = prev.findIndex((p) => p.id === item.id);
-      let next;
-      if (idx === -1) next = [...prev, item];
-      else { next = [...prev]; next[idx] = item; }
-      const ids = next.map((i) => i.id);
-      lsSet(LS.ITEM_IDS, ids);
-      lsSet(LS.ITEM(item.id), item);
-      sbUpsert(LS.ITEM_IDS, ids);
-      sbUpsert(LS.ITEM(item.id), item);
-      return next;
-    });
-  };
-
-  const deleteItem = (id) => {
-    setItems((prev) => {
-      const target = prev.find((p) => p.id === id);
-      const next = prev.filter((p) => p.id !== id);
-      const ids = next.map((i) => i.id);
-      lsSet(LS.ITEM_IDS, ids);
-      lsDel(LS.ITEM(id));
-      sbUpsert(LS.ITEM_IDS, ids);
-      sbDelete(LS.ITEM(id));
-      if (target && target.isSeed) {
-        const deleted = lsGet(LS.DELETED_SEEDS, []);
-        if (!deleted.includes(id)) {
-          const nextDeleted = [...deleted, id];
-          lsSet(LS.DELETED_SEEDS, nextDeleted);
-          sbUpsert(LS.DELETED_SEEDS, nextDeleted);
-        }
-      }
-      return next;
-    });
-  };
-
-  const addTab = (name) => {
-    const tab = { id: uid('tab'), name };
-    setConfig({ ...config, tabs: [...config.tabs, tab] });
-    return tab;
-  };
-  const deleteTab = (tabId) => {
-    // Reassign items in that tab to "all"
-    const affected = items.filter((i) => i.tabId === tabId);
-    affected.forEach((it) => upsertItem({ ...it, tabId: 'all' }));
-    setConfig({ ...config, tabs: config.tabs.filter((t) => t.id !== tabId) });
-  };
-
-  return {
-    config, setConfig,
-    items, setItems: persistItems,
-    upsertItem, deleteItem,
-    addTab, deleteTab,
-  };
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Small UI helpers
-// ───────────────────────────────────────────────────────────────────────────
-function StarIcon({ filled = false, className = '' }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  );
-}
-function IconButton({ onClick, title, children, className = '' }) {
-  return (
-    <button onClick={onClick} title={title}
-      className={`inline-flex items-center justify-center rounded-md p-1.5 text-muted hover:text-ink hover:bg-line/60 transition-colors ${className}`}>
-      {children}
-    </button>
-  );
-}
-function PrimaryButton({ onClick, children, className = '' }) {
-  return (
-    <button onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-md bg-ember text-parchment px-3 py-2 text-sm font-medium hover:bg-ember/90 transition-colors ${className}`}>
-      {children}
-    </button>
-  );
-}
-function GhostButton({ onClick, children, className = '' }) {
-  return (
-    <button onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-md border border-line bg-parchment px-3 py-2 text-sm font-medium text-ink hover:border-muted/50 transition-colors ${className}`}>
-      {children}
-    </button>
-  );
-}
-
-function formatBytes(n) {
-  if (!n && n !== 0) return '';
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Long-press hook
-// ───────────────────────────────────────────────────────────────────────────
-function useLongPress(onLongPress, ms = 800) {
-  const timer = useRef(null);
-  const triggered = useRef(false);
-  const start = (e) => {
-    if (e && e.cancelable) e.preventDefault();
-    triggered.current = false;
-    clear();
-    timer.current = setTimeout(() => {
-      triggered.current = true;
-      onLongPress();
-    }, ms);
-  };
-  const clear = () => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-  };
-  return {
-    onPointerDown: start,
-    onPointerUp: clear,
-    onPointerLeave: clear,
-    onPointerCancel: clear,
-  };
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Header
-// ───────────────────────────────────────────────────────────────────────────
-function Header({ title, onOpenAdmin }) {
-  const longPress = useLongPress(onOpenAdmin, 800);
-  return (
-    <header className="border-b border-line">
-      <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
-        <h1 className="font-display text-3xl sm:text-4xl tracking-tight text-ink">{title}</h1>
-        <button
-          {...longPress}
-          className="text-muted hover:text-ember transition-colors select-none touch-none"
-          title=""
-          aria-label="archive star"
-        >
-          <StarIcon className="w-5 h-5" />
-        </button>
-      </div>
-    </header>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Tab bar
-// ───────────────────────────────────────────────────────────────────────────
-function TabBar({ tabs, current, onChange, counts }) {
-  if (!tabs || tabs.length < 1) return null;
-  const all = { id: 'all', name: 'All' };
-  const list = [all, ...tabs];
-  return (
-    <div className="max-w-3xl mx-auto px-6 mt-4">
-      <div className="flex flex-wrap gap-1 border-b border-line">
-        {list.map((t) => {
-          const active = current === t.id;
-          return (
-            <button key={t.id} onClick={() => onChange(t.id)}
-              className={`px-3 py-2 text-sm font-medium relative transition-colors ${active ? 'text-ember' : 'text-muted hover:text-ink'}`}>
-              {t.name}
-              <span className="font-mono text-[10px] ml-1.5 text-muted/80">{counts[t.id] || 0}</span>
-              {active && <span className="absolute left-2 right-2 -bottom-px h-[2px] bg-ember rounded-full" />}
-            </button>
-          );
-        })}
-      </div>
+  <!-- Live summary strip -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <p class="summary-label">Basic Price</p>
+      <p class="summary-value" id="sum-b-price">—</p>
+      <p class="summary-sub">/month</p>
     </div>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Item list
-// ───────────────────────────────────────────────────────────────────────────
-function ItemList({ items, onOpen }) {
-  if (!items.length) {
-    return (
-      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
-        <p className="font-display text-2xl text-ink mb-2">Nothing here yet</p>
-        <p className="text-muted text-sm">Long-press the star above to open the admin portal and add your first item.</p>
-      </div>
-    );
-  }
-  return (
-    <div className="max-w-3xl mx-auto px-6 py-6">
-      <ul className="divide-y divide-line">
-        {items.map((item) => {
-          const hint = item.type === 'html'
-            ? formatBytes(item.data?.size)
-            : `${(item.data?.rows?.length || 0)} rows · ${(item.data?.columns?.length || 0)} cols`;
-          return (
-            <li key={item.id}>
-              <button onClick={() => onOpen(item)}
-                className="group w-full text-left py-5 flex items-start justify-between gap-6 hover:bg-line/30 -mx-3 px-3 rounded-md transition-colors">
-                <div className="min-w-0">
-                  <div className="flex items-baseline gap-3">
-                    <h3 className="font-display text-xl text-ink truncate">{item.title || 'Untitled'}</h3>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted/80">{item.type}</span>
-                  </div>
-                  {item.description && (
-                    <p className="text-muted text-sm mt-1 line-clamp-2">{item.description}</p>
-                  )}
-                </div>
-                <div className="shrink-0 font-mono text-xs text-muted whitespace-nowrap pt-1.5">{hint}</div>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+    <div class="summary-card">
+      <p class="summary-label">Premium Price</p>
+      <p class="summary-value" id="sum-p-price">—</p>
+      <p class="summary-sub">/month</p>
     </div>
-  );
-}
+    <div class="summary-card highlight">
+      <p class="summary-label">Subs for £1M ARR</p>
+      <p class="summary-value" id="sum-subs">—</p>
+      <p class="summary-sub">paying subscribers</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Blended Margin</p>
+      <p class="summary-value" id="sum-gm">—</p>
+      <p class="summary-sub">across both tiers</p>
+    </div>
+    <div class="summary-card">
+      <p class="summary-label">Net HW Profit/Unit</p>
+      <p class="summary-value" id="sum-hw">—</p>
+      <p class="summary-sub">after free sub cost</p>
+    </div>
+  </div>
 
-// ───────────────────────────────────────────────────────────────────────────
-// HTML viewer
-// ───────────────────────────────────────────────────────────────────────────
-function HtmlViewer({ item, onBack }) {
-  return (
-    <div className="fixed inset-0 bg-parchment flex flex-col z-40">
-      <div className="border-b border-line px-4 py-3 flex items-center gap-3 bg-parchment">
-        <GhostButton onClick={onBack}>← Back</GhostButton>
-        <div className="min-w-0">
-          <div className="font-display text-lg truncate">{item.title}</div>
-          {item.description && <div className="text-muted text-xs truncate">{item.description}</div>}
+  <!-- Hardware economics -->
+  <p class="sec-label">Hardware Economics</p>
+  <div class="panel spacer">
+    <div class="panel-grid2">
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">Hardware retail price (£)</span>
+          <input type="range" id="sl-hw-price" min="30" max="120" step="5" value="50">
+          <span class="sl-val" id="out-hw-price">£50</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-label">BOM / unit cost (£)</span>
+          <input type="range" id="sl-hw-bom" min="10" max="80" step="5" value="30">
+          <span class="sl-val" id="out-hw-bom">£30</span>
         </div>
       </div>
-      <iframe
-        title={item.title}
-        srcDoc={item.data?.content || '<p style="font-family: sans-serif; padding: 2rem; color:#777">No content.</p>'}
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-        className="flex-1 w-full bg-white"
-      />
-    </div>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Table editor
-// ───────────────────────────────────────────────────────────────────────────
-function TableEditor({ item, onBack, onSave }) {
-  const [data, setData] = useState(item.data || { columns: [], rows: [] });
-  const [editing, setEditing] = useState(null); // { type: 'cell'|'header', r?, c }
-  const [draft, setDraft] = useState('');
-  const taRef = useRef(null);
-
-  // Auto-save on every data change
-  useEffect(() => {
-    onSave({ ...item, data });
-  // eslint-disable-next-line
-  }, [data]);
-
-  useEffect(() => {
-    if (editing && taRef.current) {
-      taRef.current.focus();
-      taRef.current.select();
-    }
-  }, [editing]);
-
-  const startCellEdit = (r, c) => {
-    setEditing({ type: 'cell', r, c });
-    setDraft(data.rows[r]?.[c] ?? '');
-  };
-  const startHeaderEdit = (c) => {
-    setEditing({ type: 'header', c });
-    setDraft(data.columns[c]?.label ?? '');
-  };
-  const commit = () => {
-    if (!editing) return;
-    if (editing.type === 'cell') {
-      const nextRows = data.rows.map((row, ri) => {
-        if (ri !== editing.r) return row;
-        const copy = [...row];
-        copy[editing.c] = draft;
-        return copy;
-      });
-      setData({ ...data, rows: nextRows });
-    } else {
-      const nextCols = data.columns.map((col, ci) => ci === editing.c ? { ...col, label: draft } : col);
-      setData({ ...data, columns: nextCols });
-    }
-    setEditing(null);
-  };
-  const cancel = () => setEditing(null);
-
-  const addColumn = () => {
-    const newCol = { id: uid('c'), label: `Column ${data.columns.length + 1}` };
-    const newRows = data.rows.map((row) => [...row, '']);
-    setData({ columns: [...data.columns, newCol], rows: newRows });
-  };
-  const addRow = () => {
-    const newRow = data.columns.map(() => '');
-    setData({ ...data, rows: [...data.rows, newRow] });
-  };
-  const deleteColumn = (c) => {
-    const newCols = data.columns.filter((_, i) => i !== c);
-    const newRows = data.rows.map((row) => row.filter((_, i) => i !== c));
-    setData({ columns: newCols, rows: newRows });
-  };
-  const deleteRow = (r) => {
-    setData({ ...data, rows: data.rows.filter((_, i) => i !== r) });
-  };
-
-  const handleKey = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(); }
-    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-parchment flex flex-col z-40">
-      <div className="border-b border-line px-4 py-3 flex items-center gap-3 bg-parchment">
-        <GhostButton onClick={onBack}>← Back</GhostButton>
-        <div className="min-w-0 flex-1">
-          <div className="font-display text-lg truncate">{item.title}</div>
-          {item.description && <div className="text-muted text-xs truncate">{item.description}</div>}
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">Free Basic months included</span>
+          <input type="range" id="sl-free-months" min="1" max="12" step="1" value="6">
+          <span class="sl-val" id="out-free-months">6 mo</span>
         </div>
-        <div className="flex items-center gap-2">
-          <GhostButton onClick={addColumn}>+ Column</GhostButton>
-          <GhostButton onClick={addRow}>+ Row</GhostButton>
+        <div class="sl-row">
+          <span class="sl-label">Units sold / year</span>
+          <input type="range" id="sl-units-hw" min="1000" max="100000" step="1000" value="10000">
+          <span class="sl-val" id="out-units-hw">10,000</span>
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
-        <table className="min-w-full border-separate border-spacing-0">
-          <thead className="sticky top-0 z-10">
-            <tr>
-              <th className="w-10 bg-parchment border-b border-line" />
-              {data.columns.map((col, c) => (
-                <th key={col.id} className="group bg-parchment border-b border-line text-left">
-                  <div className="relative px-3 py-2 min-w-[160px]">
-                    {editing && editing.type === 'header' && editing.c === c ? (
-                      <textarea
-                        ref={taRef}
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onBlur={commit}
-                        onKeyDown={handleKey}
-                        className="w-full font-mono text-xs uppercase tracking-wider bg-parchment border border-ember/40 rounded px-1.5 py-1 outline-none"
-                        rows={1}
-                      />
-                    ) : (
-                      <button
-                        onDoubleClick={() => startHeaderEdit(c)}
-                        className="font-mono text-xs uppercase tracking-wider text-muted hover:text-ink text-left w-full"
-                        title="Double-click to rename"
-                      >
-                        {col.label || '—'}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => deleteColumn(c)}
-                      className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 text-muted hover:text-ember text-xs px-1.5 py-0.5 rounded transition-opacity"
-                      title="Delete column"
-                    >×</button>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.rows.map((row, r) => (
-              <tr key={r} className="group">
-                <td className="w-10 border-b border-line/60 align-top">
-                  <div className="relative h-full">
-                    <span className="block font-mono text-[10px] text-muted/60 text-right pr-2 pt-3">{r + 1}</span>
-                  </div>
-                </td>
-                {data.columns.map((col, c) => (
-                  <td key={col.id} className="border-b border-line/60 align-top">
-                    {editing && editing.type === 'cell' && editing.r === r && editing.c === c ? (
-                      <textarea
-                        ref={taRef}
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onBlur={commit}
-                        onKeyDown={handleKey}
-                        className="w-full min-h-[44px] px-3 py-2 text-sm bg-parchment border border-ember/40 outline-none"
-                        rows={Math.max(1, draft.split('\n').length)}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => startCellEdit(r, c)}
-                        className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-line/40 whitespace-pre-wrap min-h-[44px]"
-                      >
-                        {row[c] || <span className="text-muted/50">—</span>}
-                      </button>
-                    )}
-                  </td>
-                ))}
-                <td className="w-10 border-b border-line/60 align-top">
-                  <button
-                    onClick={() => deleteRow(r)}
-                    className="opacity-0 group-hover:opacity-100 text-muted hover:text-ember text-xs px-2 py-2 transition-opacity"
-                    title="Delete row"
-                  >×</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {(!data.rows.length || !data.columns.length) && (
-          <div className="p-8 text-center text-muted text-sm">
-            {!data.columns.length && <p>Add a column to begin.</p>}
-            {data.columns.length > 0 && !data.rows.length && <p>Add a row to begin entering data.</p>}
-          </div>
-        )}
+    </div>
+    <hr>
+    <div class="panel-grid4" style="margin-bottom:14px;">
+      <div class="metric">
+        <p class="metric-label">Hardware GP</p>
+        <p class="metric-value" id="hw-gp">—</p>
+        <p class="metric-sub" id="hw-gp-pct">—</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Free sub cost offset</p>
+        <p class="metric-value" id="hw-offset">—</p>
+        <p class="metric-sub">charged to HW P&L</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Net HW profit/unit</p>
+        <p class="metric-value" id="hw-net">—</p>
+        <p class="metric-sub" id="hw-net-note">after free sub cost</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Annual HW profit</p>
+        <p class="metric-value" id="hw-annual">—</p>
+        <p class="metric-sub" id="hw-units-lbl">—</p>
       </div>
     </div>
-  );
-}
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;">
+      <p style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;">Unit P&L Breakdown</p>
+      <div class="pl-row"><span class="pl-label">Retail price</span><span class="pl-val" id="pl-retail">—</span></div>
+      <div class="pl-row"><span class="pl-label">BOM cost</span><span class="pl-val" id="pl-bom" style="color:var(--red)">—</span></div>
+      <div class="pl-row"><span class="pl-label">Free Basic sub cost (<span id="pl-months">6</span> mo)</span><span class="pl-val" id="pl-offset" style="color:var(--red)">—</span></div>
+      <div class="pl-row"><span class="pl-label">Net profit per unit</span><span class="pl-val" id="pl-net">—</span></div>
+    </div>
+    <div id="hw-msg" class="msg msg-good" style="margin-top:12px;"> </div>
+  </div>
 
-// ───────────────────────────────────────────────────────────────────────────
-// Admin portal
-// ───────────────────────────────────────────────────────────────────────────
-function AdminPortal({ archive, onClose }) {
-  const { config, setConfig, items, upsertItem, deleteItem, addTab, deleteTab } = archive;
-  const [pageTitle, setPageTitle] = useState(config.pageTitle);
-  const [newTabName, setNewTabName] = useState('');
-  const fileInputRef = useRef(null);
-  const [dragOver, setDragOver] = useState(false);
-
-  useEffect(() => { setPageTitle(config.pageTitle); }, [config.pageTitle]);
-
-  const commitTitle = () => {
-    const next = (pageTitle || '').trim() || 'Archive';
-    if (next !== config.pageTitle) setConfig({ ...config, pageTitle: next });
-  };
-
-  const handleFiles = async (files) => {
-    const list = Array.from(files || []);
-    for (const f of list) {
-      const isHtml = /\.html?$/i.test(f.name) || f.type.includes('html');
-      if (!isHtml) continue;
-      const text = await f.text();
-      const item = {
-        id: uid('item'),
-        type: 'html',
-        title: f.name.replace(/\.html?$/i, ''),
-        description: '',
-        tabId: 'all',
-        createdAt: Date.now(),
-        data: { content: text, size: text.length },
-      };
-      upsertItem(item);
-    }
-  };
-
-  const onDrop = (e) => {
-    e.preventDefault();
-    setDragOver(false);
-    handleFiles(e.dataTransfer.files);
-  };
-
-  const createBlankTable = () => {
-    const item = {
-      id: uid('item'),
-      type: 'table',
-      title: 'Untitled table',
-      description: '',
-      tabId: 'all',
-      createdAt: Date.now(),
-      data: {
-        columns: [
-          { id: uid('c'), label: 'Column 1' },
-          { id: uid('c'), label: 'Column 2' },
-        ],
-        rows: [['', ''], ['', '']],
-      },
-    };
-    upsertItem(item);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-parchment z-50 fade-in overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-wider text-muted">Admin</p>
-            <h2 className="font-display text-3xl text-ink mt-1">Settings</h2>
-          </div>
-          <GhostButton onClick={onClose}>Done</GhostButton>
+  <!-- Shared subscription costs -->
+  <p class="sec-label">Shared Subscription Cost Inputs</p>
+  <div class="panel spacer">
+    <div class="panel-grid2">
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">Data rate (£/GB)</span>
+          <input type="range" id="sl-rate" min="0.50" max="2.00" step="0.10" value="1.80">
+          <span class="sl-val" id="out-rate">£1.80</span>
         </div>
+        <div class="sl-row">
+          <span class="sl-label">Emergency platform (£/mo)</span>
+          <input type="range" id="sl-em" min="0.05" max="0.50" step="0.05" value="0.10">
+          <span class="sl-val" id="out-em">£0.10</span>
+        </div>
+      </div>
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">AI processing (£/mo)</span>
+          <input type="range" id="sl-ai" min="0.05" max="0.40" step="0.05" value="0.15">
+          <span class="sl-val" id="out-ai">£0.15</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-label">Target gross margin</span>
+          <input type="range" id="sl-gm" min="50" max="85" step="1" value="70">
+          <span class="sl-val" id="out-gm">70%</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        {/* Page title */}
-        <section className="mb-10">
-          <h3 className="font-mono text-[10px] uppercase tracking-wider text-muted mb-2">Page title</h3>
-          <input
-            value={pageTitle}
-            onChange={(e) => setPageTitle(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.currentTarget.blur(); } }}
-            className="w-full font-display text-2xl bg-transparent border-b border-line focus:border-ember outline-none py-2 text-ink"
-          />
-        </section>
-
-        {/* Tabs */}
-        <section className="mb-10">
-          <h3 className="font-mono text-[10px] uppercase tracking-wider text-muted mb-3">Tabs</h3>
-          {!config.tabs.length && <p className="text-sm text-muted mb-3">No custom tabs yet. Items will appear under "All".</p>}
-          <ul className="space-y-2 mb-4">
-            {config.tabs.map((t) => {
-              const count = items.filter((i) => i.tabId === t.id).length;
-              return (
-                <li key={t.id} className="flex items-center justify-between border border-line rounded-md px-3 py-2">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-ink">{t.name}</span>
-                    <span className="font-mono text-[10px] text-muted">{count} items</span>
-                  </div>
-                  <button onClick={() => deleteTab(t.id)} className="text-xs text-muted hover:text-ember">Delete</button>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="flex gap-2">
-            <input
-              value={newTabName}
-              onChange={(e) => setNewTabName(e.target.value)}
-              placeholder="New tab name"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newTabName.trim()) {
-                  addTab(newTabName.trim());
-                  setNewTabName('');
-                }
-              }}
-              className="flex-1 border border-line rounded-md px-3 py-2 text-sm bg-parchment outline-none focus:border-ember"
-            />
-            <GhostButton onClick={() => {
-              if (newTabName.trim()) { addTab(newTabName.trim()); setNewTabName(''); }
-            }}>Add tab</GhostButton>
-          </div>
-        </section>
-
-        {/* Upload HTML / New table */}
-        <section className="mb-10">
-          <h3 className="font-mono text-[10px] uppercase tracking-wider text-muted mb-3">Add content</h3>
-          <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragOver ? 'border-ember bg-ember/5' : 'border-line bg-parchment'}`}
-          >
-            <p className="text-sm text-ink">Drop HTML files here</p>
-            <p className="text-xs text-muted mt-1">or</p>
-            <div className="mt-3 flex items-center justify-center gap-2">
-              <GhostButton onClick={() => fileInputRef.current?.click()}>Choose files</GhostButton>
-              <PrimaryButton onClick={createBlankTable}>New table</PrimaryButton>
+  <!-- Data allowance -->
+  <p class="sec-label">Data Allowance & Customer Framing</p>
+  <div class="panel spacer">
+    <div class="panel-grid2">
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">Basic — avg usage (GB/mo)</span>
+          <input type="range" id="sl-b-avg" min="0.1" max="2.0" step="0.1" value="0.5">
+          <span class="sl-val" id="out-b-avg">0.5 GB</span>
+        </div>
+        <div class="sl-row" style="margin-bottom:0;">
+          <span class="sl-label">Basic — plan allowance (GB)</span>
+          <input type="range" id="sl-b-cap" min="1" max="5" step="0.5" value="2">
+          <span class="sl-val" id="out-b-cap">2 GB</span>
+        </div>
+        <div class="framing-box">
+          <p class="framing-title">Basic — customer-facing copy</p>
+          <p class="framing-value" id="b-framing-headline">—</p>
+          <p class="framing-sub" id="b-framing-sub">—</p>
+          <div style="margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px;">
+              <span>Typical usage</span><span id="b-usage-pct">—</span>
             </div>
-            <input ref={fileInputRef} type="file" multiple accept=".html,.htm,text/html" className="hidden"
-              onChange={(e) => handleFiles(e.target.files)} />
+            <div class="usage-bar-wrap">
+              <div class="usage-used" id="b-used-bar" style="background:var(--teal);"></div>
+              <div class="usage-spare" id="b-spare-bar"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px;">
+              <span id="b-used-lbl">—</span><span id="b-cap-lbl">—</span>
+            </div>
           </div>
-        </section>
-
-        {/* Items list with edit */}
-        <section>
-          <h3 className="font-mono text-[10px] uppercase tracking-wider text-muted mb-3">Items ({items.length})</h3>
-          {!items.length && <p className="text-sm text-muted">No items yet.</p>}
-          <ul className="space-y-3">
-            {items.map((it) => (
-              <AdminItemRow key={it.id} item={it} tabs={config.tabs}
-                onChange={(next) => upsertItem(next)}
-                onDelete={() => deleteItem(it.id)} />
-            ))}
-          </ul>
-        </section>
-
-        <div className="mt-12 text-center font-mono text-[10px] text-muted">
-          {SUPABASE_ENABLED ? 'Supabase sync: ON' : 'Local-only mode · configure SUPABASE_URL/KEY in source to enable sync'}
+        </div>
+      </div>
+      <div>
+        <div class="sl-row">
+          <span class="sl-label">Premium — avg usage (GB/mo)</span>
+          <input type="range" id="sl-p-avg" min="0.5" max="3.0" step="0.1" value="1.0">
+          <span class="sl-val" id="out-p-avg">1.0 GB</span>
+        </div>
+        <div class="sl-row" style="margin-bottom:0;">
+          <span class="sl-label">Premium — plan allowance (GB)</span>
+          <input type="range" id="sl-p-cap" min="2" max="10" step="0.5" value="5">
+          <span class="sl-val" id="out-p-cap">5 GB</span>
+        </div>
+        <div class="framing-box">
+          <p class="framing-title">Premium — customer-facing copy</p>
+          <p class="framing-value" id="p-framing-headline">—</p>
+          <p class="framing-sub" id="p-framing-sub">—</p>
+          <div style="margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px;">
+              <span>Typical usage</span><span id="p-usage-pct">—</span>
+            </div>
+            <div class="usage-bar-wrap">
+              <div class="usage-used" id="p-used-bar" style="background:var(--purple);"></div>
+              <div class="usage-spare" id="p-spare-bar"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px;">
+              <span id="p-used-lbl">—</span><span id="p-cap-lbl">—</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
+  </div>
 
-function AdminItemRow({ item, tabs, onChange, onDelete }) {
-  const [title, setTitle] = useState(item.title);
-  const [desc, setDesc] = useState(item.description || '');
-  const [tabId, setTabId] = useState(item.tabId || 'all');
-
-  useEffect(() => { setTitle(item.title); setDesc(item.description || ''); setTabId(item.tabId || 'all'); }, [item.id]);
-
-  const persist = (patch) => {
-    onChange({ ...item, title, description: desc, tabId, ...patch });
-  };
-
-  return (
-    <li className="border border-line rounded-md p-3">
-      <div className="flex items-start gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted/80 mt-2 w-12 shrink-0">{item.type}</span>
-        <div className="flex-1 min-w-0 space-y-2">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => persist({ title })}
-            placeholder="Title"
-            className="w-full font-display text-lg bg-transparent border-b border-line focus:border-ember outline-none py-1"
-          />
-          <input
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            onBlur={() => persist({ description: desc })}
-            placeholder="Description"
-            className="w-full text-sm bg-transparent border-b border-line focus:border-ember outline-none py-1 text-muted"
-          />
-          <div className="flex items-center gap-3 text-xs">
-            <label className="font-mono text-[10px] uppercase tracking-wider text-muted">Tab</label>
-            <select
-              value={tabId}
-              onChange={(e) => { setTabId(e.target.value); persist({ tabId: e.target.value }); }}
-              className="border border-line rounded-md px-2 py-1 bg-parchment text-sm outline-none focus:border-ember"
-            >
-              <option value="all">All</option>
-              {tabs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-          </div>
-        </div>
-        <button onClick={() => {
-          if (confirm(`Delete "${item.title}"?`)) onDelete();
-        }} className="text-xs text-muted hover:text-ember shrink-0">Delete</button>
+  <!-- Tier cards -->
+  <p class="sec-label">Subscription Tiers</p>
+  <div class="tier-grid">
+    <div class="tier-panel">
+      <p class="tier-head"><span class="badge badge-teal">Basic</span> Tier</p>
+      <div class="sl-row">
+        <span class="sl-label">Storage cost (£/mo)</span>
+        <input type="range" id="sl-b-storage" min="0.05" max="0.50" step="0.05" value="0.20">
+        <span class="sl-val" id="out-b-storage">£0.20</span>
       </div>
-    </li>
-  );
+      <hr>
+      <p class="price-range">Retail price · £2 – £7</p>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+        <p class="price-big" id="b-price-display">£2.99</p>
+        <span class="price-unit">/mo</span>
+      </div>
+      <div class="price-slider-row">
+        <span class="price-range-lbl">£2</span>
+        <input type="range" id="sl-b-price" min="2.00" max="7.00" step="0.50" value="2.99" style="flex:1;">
+        <span class="price-range-lbl" style="text-align:right;">£7</span>
+      </div>
+      <hr>
+      <div class="panel-grid4" style="gap:8px;margin-bottom:10px;">
+        <div class="metric"><p class="metric-label">Cost/mo</p><p class="metric-value" id="b-cost" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Margin</p><p class="metric-value" id="b-gm" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Profit/mo</p><p class="metric-value" id="b-profit" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Min price</p><p class="metric-value" id="b-minprice" style="font-size:16px;">—</p></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
+        <span>Cost as % of price</span><span id="b-pct-lbl">—</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" id="b-bar"></div></div>
+      <div id="b-msg" class="msg msg-good"> </div>
+    </div>
+
+    <div class="tier-panel premium">
+      <p class="tier-head"><span class="badge badge-purple">Premium</span> Tier</p>
+      <div class="sl-row">
+        <span class="sl-label">Storage cost (£/mo)</span>
+        <input type="range" id="sl-p-storage" min="0.10" max="0.80" step="0.05" value="0.40">
+        <span class="sl-val" id="out-p-storage">£0.40</span>
+      </div>
+      <hr>
+      <p class="price-range">Retail price · £4 – £17</p>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
+        <p class="price-big" id="p-price-display">£4.99</p>
+        <span class="price-unit">/mo</span>
+      </div>
+      <div class="price-slider-row">
+        <span class="price-range-lbl">£4</span>
+        <input type="range" id="sl-p-price" min="4.00" max="17.00" step="0.50" value="4.99" style="flex:1;">
+        <span class="price-range-lbl" style="text-align:right;">£17</span>
+      </div>
+      <hr>
+      <div class="panel-grid4" style="gap:8px;margin-bottom:10px;">
+        <div class="metric"><p class="metric-label">Cost/mo</p><p class="metric-value" id="p-cost" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Margin</p><p class="metric-value" id="p-gm" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Profit/mo</p><p class="metric-value" id="p-profit" style="font-size:16px;">—</p></div>
+        <div class="metric"><p class="metric-label">Min price</p><p class="metric-value" id="p-minprice" style="font-size:16px;">—</p></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px;">
+        <span>Cost as % of price</span><span id="p-pct-lbl">—</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" id="p-bar"></div></div>
+      <div id="p-msg" class="msg msg-good"> </div>
+    </div>
+  </div>
+
+  <!-- Mix & blended -->
+  <p class="sec-label">Mix & Blended Economics</p>
+  <div class="panel spacer">
+    <div class="sl-row" style="margin-bottom:14px;">
+      <span class="sl-label">Basic : Premium mix</span>
+      <input type="range" id="sl-mix" min="10" max="90" step="5" value="60">
+      <span class="sl-val" id="out-mix">60 / 40</span>
+    </div>
+    <div class="panel-grid4">
+      <div class="metric"><p class="metric-label">Blended price/mo</p><p class="metric-value" id="m-blend-price">—</p></div>
+      <div class="metric"><p class="metric-label">Blended margin</p><p class="metric-value" id="m-blend-gm">—</p></div>
+      <div class="metric"><p class="metric-label">Subs for £1M ARR</p><p class="metric-value" id="m-subs1m">—</p><p class="metric-sub">paying subscribers</p></div>
+      <div class="metric"><p class="metric-label">MRR at £1M ARR</p><p class="metric-value">£83,333</p></div>
+    </div>
+  </div>
+
+  <!-- Combined P&L -->
+  <p class="sec-label">Combined P&L View</p>
+  <div class="panel spacer">
+    <p style="font-size:12px;color:var(--text3);margin:0 0 12px;font-family:'DM Mono',monospace;">
+      At <span id="pl-units-label">10,000</span> units sold · assuming 100% conversion after free period
+    </p>
+    <div class="panel-grid4">
+      <div class="metric"><p class="metric-label">Hardware profit (annual)</p><p class="metric-value" id="cpl-hw">—</p></div>
+      <div class="metric"><p class="metric-label">Sub ARR (post free period)</p><p class="metric-value" id="cpl-arr">—</p><p class="metric-sub">100% conversion ceiling</p></div>
+      <div class="metric"><p class="metric-label">Sub gross profit (annual)</p><p class="metric-value" id="cpl-sub-gp">—</p><p class="metric-sub">revenue minus COGS</p></div>
+      <div class="metric" style="border-color:var(--teal);"><p class="metric-label">Total gross profit</p><p class="metric-value" id="cpl-total" style="color:var(--teal);">—</p><p class="metric-sub">hardware + subscription</p></div>
+    </div>
+    <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;">
+      <p style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;">Realistic conversion scenarios</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="conv-scenarios"></div>
+    </div>
+  </div>
+
+  <!-- ARR chart -->
+  <p class="sec-label">ARR by Subscriber Count</p>
+  <div class="panel spacer">
+    <div style="display:flex;gap:20px;margin-bottom:14px;font-size:12px;color:var(--text2);flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--teal);display:inline-block;"></span>Basic ARR</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--purple);display:inline-block;"></span>Premium ARR</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:14px;height:0;border-top:2px dashed var(--red);display:inline-block;"></span>£1M target</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="arr-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Conversion requirement -->
+  <p class="sec-label">Conversion Requirement</p>
+  <div class="panel">
+    <div class="sl-row" style="margin-bottom:14px;">
+      <span class="sl-label">Total camera units sold</span>
+      <input type="range" id="sl-units" min="10000" max="500000" step="5000" value="100000">
+      <span class="sl-val" id="out-units">100,000</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div class="metric"><p class="metric-label">Conversion needed</p><p class="metric-value" id="m-conv">—</p><p class="metric-sub">units → paid subs</p></div>
+      <div class="metric"><p class="metric-label">Basic subs needed</p><p class="metric-value" id="m-basic-need">—</p><p class="metric-sub" id="m-basic-pct">—</p></div>
+      <div class="metric"><p class="metric-label">Premium subs needed</p><p class="metric-value" id="m-prem-need">—</p><p class="metric-sub" id="m-prem-pct">—</p></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let arrChart = null;
+
+function fmt(n){return Math.round(n).toLocaleString('en-GB');}
+function fmtP(n){return n.toFixed(1)+'%';}
+function fmtC(n){return '£'+n.toFixed(2);}
+function fmtCK(n){
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if(abs>=1000000) return sign+'£'+(abs/1000000).toFixed(2)+'M';
+  if(abs>=1000)    return sign+'£'+Math.round(abs/1000).toLocaleString('en-GB')+'K';
+  return sign+'£'+Math.round(abs);
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// Root app
-// ───────────────────────────────────────────────────────────────────────────
-function App() {
-  const archive = useArchive();
-  const [view, setView] = useState({ mode: 'list', itemId: null });
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState('all');
+function framingCopy(avg, cap){
+  const surplus = (cap - avg).toFixed(1);
+  const hrs = Math.round(cap * 20);
+  let headline, sub;
+  if(cap >= 10){
+    headline = cap + ' GB / month';
+    sub = 'Enough for ' + hrs + '+ hrs of connected recording. Typical driver uses ' + avg.toFixed(1) + ' GB — most users never get close to the limit.';
+  } else if(cap >= 5){
+    headline = cap + ' GB / month';
+    sub = 'Covers up to ' + hrs + ' hrs of LTE-connected recording. Average user only needs ' + avg.toFixed(1) + ' GB — that\'s ' + surplus + ' GB to spare each month.';
+  } else if(cap >= 3){
+    headline = cap + ' GB / month';
+    sub = 'Typical driver uses ' + avg.toFixed(1) + ' GB — you\'ll have ' + surplus + ' GB headroom every month. Only the top 1% of heavy users approach the limit.';
+  } else {
+    headline = cap + ' GB / month';
+    sub = 'Covers everyday driving. Average user consumes ' + avg.toFixed(1) + ' GB — ' + surplus + ' GB to spare. For most drivers, this is more than enough.';
+  }
+  return { headline, sub };
+}
 
-  const filtered = useMemo(() => {
-    if (currentTab === 'all') return archive.items;
-    return archive.items.filter((i) => i.tabId === currentTab);
-  }, [archive.items, currentTab]);
+function calc(){
+  const hwPrice    = parseFloat(document.getElementById('sl-hw-price').value);
+  const hwBom      = parseFloat(document.getElementById('sl-hw-bom').value);
+  const freeMonths = parseFloat(document.getElementById('sl-free-months').value);
+  const unitsHw    = parseFloat(document.getElementById('sl-units-hw').value);
+  const rate       = parseFloat(document.getElementById('sl-rate').value);
+  const em         = parseFloat(document.getElementById('sl-em').value);
+  const ai         = parseFloat(document.getElementById('sl-ai').value);
+  const gmT        = parseFloat(document.getElementById('sl-gm').value);
+  const bAvg       = parseFloat(document.getElementById('sl-b-avg').value);
+  const bCap       = parseFloat(document.getElementById('sl-b-cap').value);
+  const pAvg       = parseFloat(document.getElementById('sl-p-avg').value);
+  const pCap       = parseFloat(document.getElementById('sl-p-cap').value);
+  const bSt        = parseFloat(document.getElementById('sl-b-storage').value);
+  const bPrice     = parseFloat(document.getElementById('sl-b-price').value);
+  const pSt        = parseFloat(document.getElementById('sl-p-storage').value);
+  const pPrice     = parseFloat(document.getElementById('sl-p-price').value);
+  const mix        = parseFloat(document.getElementById('sl-mix').value);
+  const units      = parseFloat(document.getElementById('sl-units').value);
 
-  const counts = useMemo(() => {
-    const c = { all: archive.items.length };
-    archive.config.tabs.forEach((t) => { c[t.id] = 0; });
-    archive.items.forEach((it) => {
-      if (c[it.tabId] !== undefined) c[it.tabId] += 1;
+  const bCostMo    = parseFloat((bAvg*rate + bSt + em + ai).toFixed(2));
+  const pCostMo    = parseFloat((pAvg*rate + pSt + em + ai).toFixed(2));
+  const freeSubCost= parseFloat((bCostMo * freeMonths).toFixed(2));
+  const hwGP       = hwPrice - hwBom;
+  const hwGPpct    = (hwGP / hwPrice) * 100;
+  const hwNet      = hwGP - freeSubCost;
+  const hwAnnual   = hwNet * unitsHw;
+
+  const bGM     = ((bPrice - bCostMo) / bPrice) * 100;
+  const pGM     = ((pPrice - pCostMo) / pPrice) * 100;
+  const bProfit = bPrice - bCostMo;
+  const pProfit = pPrice - pCostMo;
+  const bMin    = bCostMo / (1 - gmT / 100);
+  const pMin    = pCostMo / (1 - gmT / 100);
+  const bPct    = (bCostMo / bPrice) * 100;
+  const pPct    = (pCostMo / pPrice) * 100;
+
+  const mixB    = mix / 100;
+  const mixP    = 1 - mixB;
+  const blendP  = bPrice*mixB + pPrice*mixP;
+  const blendC  = bCostMo*mixB + pCostMo*mixP;
+  const blendGM = ((blendP - blendC) / blendP) * 100;
+  const blendProfit = blendP - blendC;
+  const subs1M  = Math.ceil(1000000 / (blendP * 12));
+  const conv    = (subs1M / units) * 100;
+  const bNeed   = Math.round(subs1M * mixB);
+  const pNeed   = Math.round(subs1M * mixP);
+
+  const subARR  = unitsHw * blendP * 12;
+  const subGP   = unitsHw * blendProfit * 12;
+  const totalGP = hwAnnual + subGP;
+
+  // Summary strip
+  document.getElementById('sum-b-price').textContent  = '£'+bPrice.toFixed(2);
+  document.getElementById('sum-p-price').textContent  = '£'+pPrice.toFixed(2);
+  document.getElementById('sum-subs').textContent     = fmt(subs1M);
+  document.getElementById('sum-gm').textContent       = fmtP(blendGM);
+  document.getElementById('sum-hw').textContent       = fmtC(hwNet);
+  document.getElementById('sum-hw').style.color       = hwNet >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Hardware
+  document.getElementById('out-hw-price').textContent    = '£'+hwPrice;
+  document.getElementById('out-hw-bom').textContent      = '£'+hwBom;
+  document.getElementById('out-free-months').textContent = freeMonths+' mo';
+  document.getElementById('out-units-hw').textContent    = fmt(unitsHw);
+  document.getElementById('hw-gp').textContent           = fmtC(hwGP);
+  document.getElementById('hw-gp-pct').textContent       = fmtP(hwGPpct)+' margin';
+  document.getElementById('hw-offset').textContent       = fmtC(freeSubCost);
+  document.getElementById('hw-net').textContent          = fmtC(hwNet);
+  document.getElementById('hw-net').style.color          = hwNet >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('hw-net-note').textContent     = hwNet >= 0 ? 'after free sub cost' : 'loss per unit';
+  document.getElementById('hw-annual').textContent       = fmtCK(hwAnnual);
+  document.getElementById('hw-annual').style.color       = hwAnnual >= 0 ? 'var(--text)' : 'var(--red)';
+  document.getElementById('hw-units-lbl').textContent    = 'at '+fmt(unitsHw)+' units';
+  document.getElementById('pl-retail').textContent       = '£'+hwPrice.toFixed(2);
+  document.getElementById('pl-bom').textContent          = '−£'+hwBom.toFixed(2);
+  document.getElementById('pl-offset').textContent       = '−£'+freeSubCost.toFixed(2);
+  document.getElementById('pl-months').textContent       = freeMonths;
+  document.getElementById('pl-net').textContent          = fmtC(hwNet);
+  document.getElementById('pl-net').style.color          = hwNet >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const hwMsg = document.getElementById('hw-msg');
+  if(hwNet >= 0){
+    hwMsg.className = 'msg msg-good';
+    hwMsg.textContent = '✓ Hardware is profitable after absorbing the '+freeMonths+'-month free subscription cost.';
+  } else {
+    hwMsg.className = 'msg msg-warn';
+    hwMsg.textContent = '✗ Free sub cost exceeds hardware gross profit by £'+Math.abs(hwNet).toFixed(2)+'/unit — raise hardware price or reduce free months.';
+  }
+
+  // Shared
+  document.getElementById('out-rate').textContent = '£'+rate.toFixed(2);
+  document.getElementById('out-em').textContent   = '£'+em.toFixed(2);
+  document.getElementById('out-ai').textContent   = '£'+ai.toFixed(2);
+  document.getElementById('out-gm').textContent   = gmT+'%';
+
+  // Data
+  document.getElementById('out-b-avg').textContent = bAvg.toFixed(1)+' GB';
+  document.getElementById('out-b-cap').textContent = bCap.toFixed(1)+' GB';
+  document.getElementById('out-p-avg').textContent = pAvg.toFixed(1)+' GB';
+  document.getElementById('out-p-cap').textContent = pCap.toFixed(1)+' GB';
+
+  const bF = framingCopy(bAvg, bCap);
+  const pF = framingCopy(pAvg, pCap);
+  document.getElementById('b-framing-headline').textContent = bF.headline;
+  document.getElementById('b-framing-sub').textContent      = bF.sub;
+  document.getElementById('p-framing-headline').textContent = pF.headline;
+  document.getElementById('p-framing-sub').textContent      = pF.sub;
+
+  const bUsedPct = Math.min((bAvg/bCap)*100, 100);
+  document.getElementById('b-usage-pct').textContent = Math.round(bUsedPct)+'% of allowance';
+  document.getElementById('b-used-bar').style.width  = bUsedPct.toFixed(1)+'%';
+  document.getElementById('b-spare-bar').style.width = (100-bUsedPct).toFixed(1)+'%';
+  document.getElementById('b-used-lbl').textContent  = 'avg '+bAvg.toFixed(1)+' GB';
+  document.getElementById('b-cap-lbl').textContent   = bCap.toFixed(1)+' GB limit';
+  const pUsedPct = Math.min((pAvg/pCap)*100, 100);
+  document.getElementById('p-usage-pct').textContent = Math.round(pUsedPct)+'% of allowance';
+  document.getElementById('p-used-bar').style.width  = pUsedPct.toFixed(1)+'%';
+  document.getElementById('p-spare-bar').style.width = (100-pUsedPct).toFixed(1)+'%';
+  document.getElementById('p-used-lbl').textContent  = 'avg '+pAvg.toFixed(1)+' GB';
+  document.getElementById('p-cap-lbl').textContent   = pCap.toFixed(1)+' GB limit';
+
+  // Tier outputs
+  document.getElementById('out-b-storage').textContent  = '£'+bSt.toFixed(2);
+  document.getElementById('out-p-storage').textContent  = '£'+pSt.toFixed(2);
+  document.getElementById('b-price-display').textContent = '£'+bPrice.toFixed(2);
+  document.getElementById('p-price-display').textContent = '£'+pPrice.toFixed(2);
+  document.getElementById('b-cost').textContent     = fmtC(bCostMo);
+  document.getElementById('b-gm').textContent       = fmtP(bGM);
+  document.getElementById('b-gm').style.color       = bGM >= gmT ? 'var(--green)' : 'var(--red)';
+  document.getElementById('b-profit').textContent   = fmtC(bProfit);
+  document.getElementById('b-minprice').textContent = fmtC(bMin);
+  document.getElementById('b-pct-lbl').textContent  = fmtP(bPct);
+  document.getElementById('p-cost').textContent     = fmtC(pCostMo);
+  document.getElementById('p-gm').textContent       = fmtP(pGM);
+  document.getElementById('p-gm').style.color       = pGM >= gmT ? 'var(--green)' : 'var(--red)';
+  document.getElementById('p-profit').textContent   = fmtC(pProfit);
+  document.getElementById('p-minprice').textContent = fmtC(pMin);
+  document.getElementById('p-pct-lbl').textContent  = fmtP(pPct);
+
+  const bBar = document.getElementById('b-bar');
+  bBar.style.width      = Math.min(bPct,100).toFixed(1)+'%';
+  bBar.style.background = bPct>40?'var(--red)':bPct>30?'var(--amber)':'var(--teal)';
+  const pBar = document.getElementById('p-bar');
+  pBar.style.width      = Math.min(pPct,100).toFixed(1)+'%';
+  pBar.style.background = pPct>40?'var(--red)':pPct>30?'var(--amber)':'var(--purple)';
+
+  const bMsg = document.getElementById('b-msg');
+  if(bGM >= gmT){ bMsg.className='msg msg-good'; bMsg.textContent='✓ Above target margin.'; }
+  else { bMsg.className='msg msg-warn'; bMsg.textContent='✗ Below '+gmT+'% target — min price needed: £'+bMin.toFixed(2)+'.'; }
+  const pMsg = document.getElementById('p-msg');
+  if(pGM >= gmT){ pMsg.className='msg msg-good'; pMsg.textContent='✓ Above target margin.'; }
+  else { pMsg.className='msg msg-warn'; pMsg.textContent='✗ Below '+gmT+'% target — min price needed: £'+pMin.toFixed(2)+'.'; }
+
+  // Mix
+  document.getElementById('out-mix').textContent       = mix+' / '+(100-mix);
+  document.getElementById('m-blend-price').textContent = fmtC(blendP);
+  document.getElementById('m-blend-gm').textContent    = fmtP(blendGM);
+  document.getElementById('m-subs1m').textContent      = fmt(subs1M);
+
+  // Combined P&L
+  document.getElementById('pl-units-label').textContent = fmt(unitsHw);
+  document.getElementById('cpl-hw').textContent         = fmtCK(hwAnnual);
+  document.getElementById('cpl-arr').textContent        = fmtCK(subARR);
+  document.getElementById('cpl-sub-gp').textContent     = fmtCK(subGP);
+  document.getElementById('cpl-total').textContent      = fmtCK(totalGP);
+  document.getElementById('cpl-total').style.color      = totalGP >= 0 ? 'var(--teal)' : 'var(--red)';
+
+  // Conversion scenarios
+  const scenarios = [0.10, 0.20, 0.30, 0.50];
+  const sc = document.getElementById('conv-scenarios');
+  sc.innerHTML = scenarios.map(r => {
+    const subs = Math.round(unitsHw * r);
+    const arr  = subs * blendP * 12;
+    const gp   = subs * blendProfit * 12;
+    return `<div class="metric">
+      <p class="metric-label">${Math.round(r*100)}% conversion</p>
+      <p class="metric-value" style="font-size:15px;color:${arr>=1000000?'var(--teal)':'var(--text)'};">${fmtCK(arr)}</p>
+      <p class="metric-sub">ARR · ${fmt(subs)} subs</p>
+      <p class="metric-sub" style="margin-top:3px;">GP: ${fmtCK(gp)}</p>
+    </div>`;
+  }).join('');
+
+  // Conversion req
+  document.getElementById('out-units').textContent      = fmt(units);
+  document.getElementById('m-conv').textContent         = fmtP(conv);
+  document.getElementById('m-basic-need').textContent   = fmt(bNeed);
+  document.getElementById('m-prem-need').textContent    = fmt(pNeed);
+  document.getElementById('m-basic-pct').textContent    = mix+'% of mix';
+  document.getElementById('m-prem-pct').textContent     = (100-mix)+'% of mix';
+
+  // Chart
+  const subLabels = [2000,4000,6000,8000,10000,12000,15000,20000];
+  const bARR = subLabels.map(s => Math.round(s*mixB*bPrice*12));
+  const pARR = subLabels.map(s => Math.round(s*mixP*pPrice*12));
+  const tgt  = subLabels.map(() => 1000000);
+
+  if(arrChart){
+    arrChart.data.datasets[0].data = bARR;
+    arrChart.data.datasets[1].data = pARR;
+    arrChart.data.datasets[2].data = tgt;
+    arrChart.update('none');
+  } else {
+    Chart.defaults.color = '#5C6270';
+    Chart.defaults.borderColor = '#2A2D35';
+    arrChart = new Chart(document.getElementById('arr-chart'), {
+      type: 'bar',
+      data: {
+        labels: subLabels.map(s => fmt(s)),
+        datasets: [
+          { label:'Basic', data:bARR, backgroundColor:'#1A3D30', hoverBackgroundColor:'#2DD4A0', borderWidth:0, borderRadius:4, stack:'s' },
+          { label:'Premium', data:pARR, backgroundColor:'#231F47', hoverBackgroundColor:'#8B7EF8', borderWidth:0, borderRadius:4, stack:'s' },
+          { label:'£1M target', data:tgt, type:'line', borderColor:'#F87171', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false, order:0 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1E2128',
+            borderColor: '#2A2D35',
+            borderWidth: 1,
+            titleColor: '#9095A0',
+            bodyColor: '#E8E9EC',
+            callbacks: { label: ctx => ctx.dataset.label+': £'+fmt(ctx.parsed.y) }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { font:{ size:11, family:"'DM Mono', monospace" }, color:'#5C6270', autoSkip:false },
+            grid: { display:false },
+            title: { display:true, text:'total paying subscribers', font:{ size:11 }, color:'#5C6270' }
+          },
+          y: {
+            stacked: true,
+            ticks: {
+              font: { size:11, family:"'DM Mono', monospace" }, color:'#5C6270',
+              callback: v => '£'+(v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v)
+            },
+            grid: { color:'#1E2128' }
+          }
+        }
+      }
     });
-    return c;
-  }, [archive.items, archive.config.tabs]);
-
-  const openItem = (item) => setView({ mode: item.type, itemId: item.id });
-  const back = () => setView({ mode: 'list', itemId: null });
-
-  const activeItem = view.itemId ? archive.items.find((i) => i.id === view.itemId) : null;
-
-  // Show list view (header + tabs + items)
-  return (
-    <div className="min-h-full">
-      <Header title={archive.config.pageTitle} onOpenAdmin={() => setAdminOpen(true)} />
-      {archive.config.tabs.length >= 1 && (
-        <TabBar tabs={archive.config.tabs} current={currentTab} onChange={setCurrentTab} counts={counts} />
-      )}
-      <ItemList items={filtered} onOpen={openItem} />
-
-      {/* Item full-screen viewers */}
-      {activeItem && activeItem.type === 'html' && (
-        <HtmlViewer item={activeItem} onBack={back} />
-      )}
-      {activeItem && activeItem.type === 'table' && (
-        <TableEditor item={activeItem} onBack={back} onSave={archive.upsertItem} />
-      )}
-
-      {/* Admin overlay */}
-      {adminOpen && (
-        <AdminPortal archive={archive} onClose={() => setAdminOpen(false)} />
-      )}
-    </div>
-  );
+  }
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+const sliderIds = [
+  'sl-hw-price','sl-hw-bom','sl-free-months','sl-units-hw',
+  'sl-rate','sl-em','sl-ai','sl-gm',
+  'sl-b-avg','sl-b-cap','sl-p-avg','sl-p-cap',
+  'sl-b-storage','sl-b-price','sl-p-storage','sl-p-price',
+  'sl-mix','sl-units'
+];
+sliderIds.forEach(id => document.getElementById(id).addEventListener('input', calc));
+calc();
 </script>
 </body>
 </html>
